@@ -6,6 +6,6 @@ git clone
 composer install (PHP5.6+)
 
 
-##IFTTT API Documentation
+## IFTTT API Documentation
 https://platform.ifttt.com/docs
 

@@ -1,7 +1,7 @@
 
 The MIT License (MIT)
 
-Copyright (c) 2017 Matthew Gotth-Olsen
+Copyright (c) 2017 Louisville Metro Government - Office of Civic Innovation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

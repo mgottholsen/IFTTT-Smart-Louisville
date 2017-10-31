@@ -34,24 +34,24 @@ class AirqualityController extends Controller
                     $road_alerts = $jsondata[0]['type'];
                     $aql = 'N/A';
 
-                    switch($air_quality)
+                    switch($road_alerts)
                     {
-                        case ( $air_quality <= 50 ):
+                        case ( $road_alerts <= 50 ):
                             $aql = 'Good';
                             break;
-                        case ( $air_quality <= 100 ):
+                        case ( $road_alerts <= 100 ):
                             $aql = 'Moderate';
                             break;
-                        case ( $air_quality <= 150 ):
+                        case ( $road_alerts <= 150 ):
                             $aql = 'Unhealthy for Sensitive Groups';
                             break;
-                        case ( $air_quality <= 200 ):
+                        case ( $road_alerts <= 200 ):
                             $aql = 'Unhealthy';
                             break;
-                        case ( $air_quality <= 300 ):
+                        case ( $road_alerts <= 300 ):
                             $aql = 'Very Unhealthy';
                             break;
-                        case ( $air_quality >= 300 ):
+                        case ( $road_alerts >= 300 ):
                             $aql = 'Hazardous';
                             break;
                     }
@@ -63,11 +63,11 @@ class AirqualityController extends Controller
                         ->get();
 
 
-                    if( $aqr[0]->index_value != $air_quality ) {
+                    if( $aqr[0]->index_value != $road_alerts ) {
                         //insert NEW RECORD!
                         $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' Inserted new Air quality index - success");
                         $this->db->table('air_quality_record')->insertGetId(array(
-                            'index_value' => $air_quality,
+                            'index_value' => $road_alerts,
                             'label' => $aql,
                             'date_created' => date('Y-m-d H:i:s')
                         ));
@@ -91,22 +91,22 @@ class AirqualityController extends Controller
 
                         switch(rand(1, 100))
                         {
-                            case ( $air_quality <= 50 ):
+                            case ( $road_alerts <= 50 ):
                                 $color = 'Green';
                                 break;
-                            case ( $air_quality <= 100 ):
+                            case ( $road_alerts <= 100 ):
                                 $color = 'Yellow';
                                 break;
-                            case ( $air_quality <= 150 ):
+                            case ( $road_alerts <= 150 ):
                                 $color = 'Orange';
                                 break;
-                            case ( $air_quality <= 200 ):
+                            case ( $road_alerts <= 200 ):
                                 $color = 'Red';
                                 break;
-                            case ( $air_quality <= 300 ):
+                            case ( $road_alerts <= 300 ):
                                 $color = 'Purple';
                                 break;
-                            case ( $air_quality >= 300 ):
+                            case ( $road_alerts >= 300 ):
                                 $color = 'Maroon';
                                 break;
                         }

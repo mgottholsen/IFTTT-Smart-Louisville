@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace Src\Controllers;
 
 use Slim\Views\Twig as View;
 
@@ -8,7 +8,7 @@ class AirqualityController extends Controller
 {
     public function index( $request, $response )
     {
-        $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' route - success");
+        $this->logger->info("road_alerts '/ifttt/v1/triggers/road_alerts' route - success");
         $error_msgs = array();
 
         $request_data = json_decode($request->getBody()->getContents(), true);
@@ -20,19 +20,18 @@ class AirqualityController extends Controller
         if( empty($error_msgs) )
         {
             $client = new \GuzzleHttp\Client();
-            $res = $client->request('GET', 'http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=<INSERT_YOUR_ZIP_CODE_HERE>&distance=25&API_KEY=<INSERT_YOUR_API_KEY_HERE>');
+            $res = $client->request('GET', $this->container['settings']['ifttt_vault']['wazeRoadAlertsURL']);
 
             if( $res->getStatusCode() == 200 )
             {
-                $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' www.airnowapi.org pull - success");
+                $this->logger->info("road_alerts '/ifttt/v1/triggers/road_alerts' Road Alerts pull - success");
 
                 $body = $res->getBody()->getContents();
                 $reqdata = json_decode($body, true);
 
                 if( ! empty( $reqdata ) ) {
 
-                    $air_quality = $reqdata[0]['AQI'];
-                    //$air_quality = rand(1, 500); //run for demo
+                    $road_alerts = $jsondata[0]['type'];
                     $aql = 'N/A';
 
                     switch($air_quality)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace Src\Controllers;
 
 use Slim\Views\Twig as View;
 
@@ -11,7 +11,6 @@ class EmaController extends Controller
         $error_msgs = array();
 
         $request_data = json_decode($request->getBody()->getContents(), true);
-
         if( ! isset( $request_data['triggerFields'] ) ) { $error_msgs[] = array('message' => 'TriggerFields is not set'); }
 
         $limit = isset( $request_data['limit'] ) && ! empty($request_data['limit']) ? $request_data['limit'] : ( isset( $request_data['limit'] ) && $request_data['limit'] === 0 ? 0 : null );
@@ -19,7 +18,7 @@ class EmaController extends Controller
         if( empty($error_msgs) )
         {
             $client = new \GuzzleHttp\Client();
-            $res = $client->request('GET', '<INSERT_YOUR_GETRAVE_XML_URL_HERE>');
+            $res = $client->request('GET', $this->container['settings']['ifttt_vault']['getRave'] );
 
             if( $res->getStatusCode() == 200 )
             {
@@ -31,21 +30,22 @@ class EmaController extends Controller
                 $data = $results['value'];
 
                 $rdata = array(
-                    'created_at' => $data[2]['value'],
-                    //'created_at' => datetimeformat(null, null,'c'),
+                    //'created_at' => $data[2]['value'],
+                    'created_at' => datetimeformat(null, null,'c'),
                     'sent' => $data[2]['value'],
                     'status' => $data[3]['value'],
                     'event' => $data[3]['value'],
-                    'urgency' => $data[7]['value'][3]['value'],
-                    'severity' => $data[7]['value'][4]['value'],
-                    'certainty' => $data[7]['value'][5]['value'],
-                    'effective' => $data[7]['value'][6]['value'],
-                    'expires' => $data[7]['value'][8]['value'],
-                    'sender' => $data[7]['value'][9]['value'],
-                    'headline' => $data[7]['value'][10]['value'],
-                    'description' => preg_replace('/ {2,}/', ' ', trim($data[7]['value'][11]['value'])),
-                    'date_created' => $data[2]['value']
-                    //'date_created' => datetimeformat(null, null,'c')
+                    'urgency' => $data[6]['value'][3]['value'],
+                    'severity' => $data[6]['value'][4]['value'],
+                    'certainty' => $data[6]['value'][5]['value'],
+                    'effective' => $data[6]['value'][6]['value'],
+                    'expires' => $data[6]['value'][8]['value'],
+                    'sender' => $data[6]['value'][9]['value'],
+                    'headline' => $data[6]['value'][10]['value'],
+                    //'description' => $data[7]['value'][11]['value'],
+                    'description' => preg_replace('/ {2,}/', ' ', trim($data[6]['value'][11]['value'])),
+                    //'date_created' => $data[2]['value']
+                    'date_created' => datetimeformat(null, null,'c')
                 );
 
 

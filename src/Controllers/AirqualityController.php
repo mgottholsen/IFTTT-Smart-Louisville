@@ -1,14 +1,20 @@
 <?php
 
-namespace App\Controllers;
+namespace Src\Controllers;
 
 use Slim\Views\Twig as View;
 
 class AirqualityController extends Controller
 {
+    public function __construct($container)
+    {
+        parent::__construct($container);
+        $this->container=$container;
+    }
+
     public function index( $request, $response )
     {
-        $this->logger->info("road_alerts '/ifttt/v1/triggers/road_alerts' route - success");
+        $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' route - success");
         $error_msgs = array();
 
         $request_data = json_decode($request->getBody()->getContents(), true);
@@ -20,38 +26,39 @@ class AirqualityController extends Controller
         if( empty($error_msgs) )
         {
             $client = new \GuzzleHttp\Client();
-            $res = $client->request('GET', 'https://www.waze.com/rtserver/web/TGeoRSS?ma=600&mj=100&mu=100&left=-86.17898941040039&right=-85.16000747680664&bottom=38.01268909779125&top=38.40331957995864&_=1498481948793');
+            $res = $client->request('GET', $this->container['settings']['ifttt_vault']['airQualityURL'] );
 
             if( $res->getStatusCode() == 200 )
             {
-                $this->logger->info("road_alerts '/ifttt/v1/triggers/road_alerts' Road Alerts pull - success");
+                $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' www.airnowapi.org pull - success");
 
                 $body = $res->getBody()->getContents();
                 $reqdata = json_decode($body, true);
 
                 if( ! empty( $reqdata ) ) {
 
-                    $road_alerts = $jsondata[0]['type'];
+                    $air_quality = $reqdata[0]['AQI'];
+                    //$air_quality = rand(1, 500); //run for demo
                     $aql = 'N/A';
 
-                    switch($road_alerts)
+                    switch($air_quality)
                     {
-                        case ( $road_alerts <= 50 ):
+                        case ( $air_quality <= 50 ):
                             $aql = 'Good';
                             break;
-                        case ( $road_alerts <= 100 ):
+                        case ( $air_quality <= 100 ):
                             $aql = 'Moderate';
                             break;
-                        case ( $road_alerts <= 150 ):
+                        case ( $air_quality <= 150 ):
                             $aql = 'Unhealthy for Sensitive Groups';
                             break;
-                        case ( $road_alerts <= 200 ):
+                        case ( $air_quality <= 200 ):
                             $aql = 'Unhealthy';
                             break;
-                        case ( $road_alerts <= 300 ):
+                        case ( $air_quality <= 300 ):
                             $aql = 'Very Unhealthy';
                             break;
-                        case ( $road_alerts >= 300 ):
+                        case ( $air_quality >= 300 ):
                             $aql = 'Hazardous';
                             break;
                     }
@@ -63,11 +70,11 @@ class AirqualityController extends Controller
                         ->get();
 
 
-                    if( $aqr[0]->index_value != $road_alerts ) {
+                    if( $aqr[0]->index_value != $air_quality ) {
                         //insert NEW RECORD!
                         $this->logger->info("air_quality '/ifttt/v1/triggers/air_quality' Inserted new Air quality index - success");
                         $this->db->table('air_quality_record')->insertGetId(array(
-                            'index_value' => $road_alerts,
+                            'index_value' => $air_quality,
                             'label' => $aql,
                             'date_created' => date('Y-m-d H:i:s')
                         ));
@@ -91,22 +98,22 @@ class AirqualityController extends Controller
 
                         switch(rand(1, 100))
                         {
-                            case ( $road_alerts <= 50 ):
+                            case ( $air_quality <= 50 ):
                                 $color = 'Green';
                                 break;
-                            case ( $road_alerts <= 100 ):
+                            case ( $air_quality <= 100 ):
                                 $color = 'Yellow';
                                 break;
-                            case ( $road_alerts <= 150 ):
+                            case ( $air_quality <= 150 ):
                                 $color = 'Orange';
                                 break;
-                            case ( $road_alerts <= 200 ):
+                            case ( $air_quality <= 200 ):
                                 $color = 'Red';
                                 break;
-                            case ( $road_alerts <= 300 ):
+                            case ( $air_quality <= 300 ):
                                 $color = 'Purple';
                                 break;
-                            case ( $road_alerts >= 300 ):
+                            case ( $air_quality >= 300 ):
                                 $color = 'Maroon';
                                 break;
                         }

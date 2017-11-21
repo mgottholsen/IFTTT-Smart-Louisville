@@ -4,16 +4,32 @@ session_start();
 
 require __DIR__ . '/../vendor/autoload.php';
 
-require __DIR__ . '/../App/common.php';
+require __DIR__ . '/../src/common.php';
 
-$config = require __DIR__ . '/../bootstrap/config.php';
+$env = 'prod'; // Options are dev,tst,prod
+
+switch ($env) {
+    case "dev":
+        $config = require __DIR__ . '/../../dev.config.php';
+        break;
+    case "tst":
+        $config = require __DIR__ . '/../../tst.config.php';
+        break;
+    case "prod":
+        $config = require __DIR__ . '/../../prod.config.php';
+        break;
+    default:
+        $config = require __DIR__ . '/../../prod.config.php';
+        break;
+}
+
 $app = new \Slim\App($config);
 
 
 $container = $app->getContainer();
 
 $container['view'] = function ($container) {
-    $view = new \Slim\Views\Twig(__DIR__ . '/../resources/views', [
+    $view = new \Slim\Views\Twig(__DIR__ . '/../templates/', [
         'cache' => false,
     ]);
 
@@ -47,27 +63,30 @@ $container['logger'] = function ($c) {
 
 /*****************************************
  * @param $container
- * @return \App\Controllers\HomeController
+ * @return \Src\Controllers\HomeController
  * defined controllers here!
  *
  */
 
 $container['TestsController'] = function( $container ){
-    return new \App\Controllers\TestsController($container);
+    return new \Src\Controllers\TestsController($container);
 };
 
 $container['HomeController'] = function( $container ){
-    return new \App\Controllers\HomeController($container);
+    return new \Src\Controllers\HomeController($container);
 };
 
 $container['AirqualityController'] = function( $container ){
-    return new \App\Controllers\AirqualityController($container);
+    return new \Src\Controllers\AirqualityController($container);
 };
 
 $container['EmaController'] = function( $container ){
-    return new \App\Controllers\EmaController($container);
+    return new \Src\Controllers\EmaController($container);
 };
 
+$container['RoadAlertsController'] = function( $container ){
+    return new \Src\Controllers\RoadAlertsController($container);
+};
 
-require __DIR__ . '/../App/middleware.php';
-require __DIR__ . '/../App/routes.php';
+require __DIR__ . '/../src/middleware.php';
+require __DIR__ . '/../src/routes.php';

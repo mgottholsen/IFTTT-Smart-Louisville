@@ -189,7 +189,11 @@ class RestaurantInspectionController extends Controller
         $response_data['data'] = array();
         $limit = $request_data['limit'];
 
-        $restaurantAddress = $request_data['triggerFields']['restaurant_address'];
+        if(isset($request_data['triggerFields']['restaurant_address']['valid'])){
+            $restaurantAddress = $request_data['triggerFields']['restaurant_address']['valid'];
+        } else {
+            $restaurantAddress = $request_data['triggerFields']['restaurant_address'];
+        }
 
         $records = $this->container->db->table('restaurant_inspections')->where('address','like',"%" . $restaurantAddress . "%")->get();
 

@@ -17,7 +17,8 @@
         "monolog/monolog": "^1.22",
         "guzzlehttp/guzzle": "^6.2",
         "illuminate/database": "^5.4",
-        "sabre/xml": "^2.0"
+        "sabre/xml": "^2.0",
+        "kzykhys/php-csv-parser": "^1.4"
     },
     "autoload": {
         "psr-4": {

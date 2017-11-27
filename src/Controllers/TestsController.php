@@ -22,6 +22,20 @@ class TestsController extends Controller
                         ],
                         'trash_recycling_pickup' => [
                             'what_is_your_address' => '121 Freeman AVE'
+                        ],
+                        'favorite_restaurant_inspections' => [
+                            'restaurant_address' => [
+                                'valid' => '627 S 4TH ST',
+                                'invalid' => 'blah'
+                            ]
+                        ]
+                    ],
+                    'triggerFieldValidations' => [
+                        'favorite_restaurant_inspections' => [
+                            'restaurant_address' => [
+                                'valid' => '627 S 4TH ST',
+                                'invalid' => 'blah'
+                            ]
                         ]
                     ]
                 ]

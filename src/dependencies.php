@@ -88,5 +88,9 @@ $container['RoadAlertsController'] = function( $container ){
     return new \Src\Controllers\RoadAlertsController($container);
 };
 
+$container['RestaurantInspectionController'] = function( $container ){
+    return new \Src\Controllers\RestaurantInspectionController($container);
+};
+
 require __DIR__ . '/../src/middleware.php';
 require __DIR__ . '/../src/routes.php';

@@ -18,9 +18,9 @@ class RestaurantInspectionController extends Controller
              * Log that we're starting the import task and create the URL variables that contain the CSV site URLs.
              */
             $this->container->logger->info('Starting restaurant inspections import task');
-            $businessesFileURL = "https://data.louisvilleky.gov/sites/default/files/businesses.csv";
-            $violationsFileURL = "https://data.louisvilleky.gov/sites/default/files/violations.csv";
-            $inspectionsFileURL = "https://data.louisvilleky.gov/sites/default/files/inspections.csv";
+            $businessesFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/businesses.csv";
+            $violationsFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/violations.csv";
+            $inspectionsFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/inspections.csv";
 
             /**
              * Pull the businesses list CSV into a string via file_get_contents

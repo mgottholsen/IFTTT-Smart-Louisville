@@ -18,9 +18,9 @@ class RestaurantInspectionController extends Controller
              * Log that we're starting the import task and create the URL variables that contain the CSV site URLs.
              */
             $this->container->logger->info('Starting restaurant inspections import task');
-            $businessesFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/businesses.csv";
-            $violationsFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/violations.csv";
-            $inspectionsFileURL = "https://lky-open-data.s3-website-us-east-1.amazonaws.com/inspections.csv";
+            $businessesFileURL = "http://lky-open-data.s3-website-us-east-1.amazonaws.com/businesses.csv";
+            $violationsFileURL = "http://lky-open-data.s3-website-us-east-1.amazonaws.com/violations.csv";
+            $inspectionsFileURL = "http://lky-open-data.s3-website-us-east-1.amazonaws.com/inspections.csv";
 
             /**
              * Pull the businesses list CSV into a string via file_get_contents
@@ -177,30 +177,74 @@ class RestaurantInspectionController extends Controller
         }
     }
 
+    /**
+     * When IFTTT queries our server and passes it along an address to get inspections for, this function queries the
+     * database for that particular restaurant by address and passes back all inspections to IFTTT.
+     */
     function favorite_restaurant_inspections($request, $response, $args){
 
+        /**
+         * Parse JSON data that was sent by IFTTT.
+         */
         $request_data = json_decode($request->getBody()->getContents(), true);
 
+        /**
+         * Check if the triggerFields value is empty. If so, this means that IFTTT did not send us the trigger fields
+         * information, therefore, we send back a 400 response and a message saying that the trigger fields are not
+         * set.
+         */
         if(empty($request_data['triggerFields'])){
             return $response->withHeader('charset','utf-8')->withJson(array('errors' => [
                 array('message' => 'TriggerFields is not set')
             ]),400);
         }
+
+        /**
+         * If the code makes it to this point, we set up an empty response array with a data field. This will later be
+         * used to populate our response back to IFTTT.
+         */
         $response_data['data'] = array();
+
+        /**
+         * If any record limits were specified from IFTTT, we will only return the amount of items they specified in
+         * the limits field.
+         */
         $limit = $request_data['limit'];
 
+        /**
+         * We check if the restaurant_address field has a valid field within it, if it does, this just means that IFTTT
+         * is running an endpoint test. If it is set, simply apply this valid address to the restaurant address variable.
+         *
+         * IF the restaurant_field does not contain a valid field within it, this means that this is not an endpoint test
+         * but an actual endpoint hit, so we just add the restaurant address field to the restaurant address variable.
+         */
         if(isset($request_data['triggerFields']['restaurant_address']['valid'])){
             $restaurantAddress = $request_data['triggerFields']['restaurant_address']['valid'];
         } else {
             $restaurantAddress = $request_data['triggerFields']['restaurant_address'];
         }
 
+        /**
+         * Get a list of records based on the restaurant address field that was passes to us earlier.
+         */
         $records = $this->container->db->table('restaurant_inspections')->where('address','like',"%" . $restaurantAddress . "%")->get();
 
+        /**
+         * If records is not empty or 0
+         */
         if($records){
+            /**
+             * For each record
+             */
             foreach($records as $record){
+                /**
+                 * Parse JSON inspections from inspections variable.
+                 */
                 $inspections = json_decode($record->inspections,true);
 
+                /**
+                 * Sort inspections by key, so that they are sorted by descending date.
+                 */
                 uksort($inspections, function ($a, $b) {
                     $aDate = explode('-', $a);
                     $aDate = $aDate[2] . $aDate[0] . $aDate[1];
@@ -213,14 +257,27 @@ class RestaurantInspectionController extends Controller
                     return ($aDate < $bDate) ? 1 : -1;
                 });
 
+                /**
+                 * If the limit is 1, we only get the first inspection in the list, which from the sort we just did above,
+                 * it should be the first item in the array.
+                 */
                 if($limit === 1){
                     $inspections = (array_slice($inspections, 0, 1));
                 }
 
+                /**
+                 * If the limit is 0, then clear out the inspections array so that it doesn't return anything.
+                 */
                 if($limit === 0) {
                     $inspections = array();
                 }
 
+                /**
+                 * This is where we loop through all the violations within an inspection. All we do here is loop through
+                 * it and use array_map to return only the violation descriptions and drop any other fields in the array.
+                 * We then add all the violations together to make a list. If there are no violations, then we set the
+                 * violations variable to "No Violations".
+                 */
                 foreach($inspections as $date => $inspection){
                     $violations = array_map(function($violation){
                         return "*" . $violation['description'];
@@ -229,6 +286,11 @@ class RestaurantInspectionController extends Controller
                     if($violations == null){
                         $violations = "No Violations";
                     }
+
+                    /**
+                     * This is where we create our response data array objects that contains the inspections for the
+                     * restaurant that IFTTT is requesting the data for.
+                     */
                     $response_data['data'][] = array(
                         'id' => $date,
                         'inspection_date' => $date,
@@ -246,26 +308,53 @@ class RestaurantInspectionController extends Controller
             }
         }
 
+        /**
+         * Return the response_data variable back to IFTTT.
+         */
         return $response->withHeader('charset','utf-8')->withJson($response_data,200);
     }
 
+    /**
+     * This function validates the restaurant address that is specified by the user when creating an applet.
+     */
     function favorite_restaurant_inspections_restaurant_address_validation($request, $response, $args){
+        /**
+         * Parse JSON data and get the incoming address from the value field.
+         */
         $request_data = json_decode($request->getBody()->getContents(), true);
         $incomingAddress = $request_data['value'];
 
+        /**
+         * Query DB with the incoming address that was specified by the user.
+         */
         $restaurant = $this->container->db->table('restaurant_inspections')->where('address','like',"%" . $incomingAddress . "%")->first();
+
+        /**
+         * If the restaurant variable isn't empty or 0.
+         */
         if($restaurant){
+            /**
+             * If there is a restaurant based on the address, We generate response data that will be sent back to IFTTT
+             * telling them that the validation is valid.
+             */
             $responseData['data'] = [
-                'valid' => true,
-                'message' => 'Restaurant: ' . $restaurant->name
+                'valid' => true
             ];
         } else {
+            /**
+             * If there is no restaurant with that address, we generate the response data to tell IFTTT that the data
+             * is invalid. Along with a message to let the user know that we could not find a restaurant based on the
+             * address given.
+             */
             $responseData['data'] = [
                 'valid' => false,
                 'message' => 'Could not find restaurant at this address'
             ];
         }
 
+        /**
+         * Return our response.
+         */
         return $response->withHeader('charset','utf-8')->withJson($responseData,200);
     }
 }

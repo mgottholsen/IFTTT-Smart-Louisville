@@ -15,6 +15,11 @@ class RestaurantInspectionController extends Controller
     {
         try {
             /**
+             * Increase the memory because apparently 128M is not enough.
+             */
+            ini_set('memory_limit','256M');
+
+            /**
              * Log that we're starting the import task and create the URL variables that contain the CSV site URLs.
              */
             $this->container->logger->info('Starting restaurant inspections import task');

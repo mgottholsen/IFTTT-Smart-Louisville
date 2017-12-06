@@ -63,6 +63,24 @@ CREATE TABLE `emergency_notifications` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `restaurant_inspections`;
+
+CREATE TABLE `restaurant_inspections` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `business_id` varchar(45) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `address` varchar(45) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `state` varchar(45) DEFAULT NULL,
+  `zip` varchar(45) DEFAULT NULL,
+  `latitude` float DEFAULT NULL,
+  `longitude` float DEFAULT NULL,
+  `phone` varchar(45) DEFAULT NULL,
+  `inspections` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2388 DEFAULT CHARSET=latin1;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

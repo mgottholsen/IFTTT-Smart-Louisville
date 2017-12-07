@@ -4,6 +4,7 @@ namespace Src\Controllers;
 
 use KzykHys\CsvParser\CsvParser;
 use Slim\Views\Twig as View;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class RestaurantInspectionController extends Controller
 {
@@ -217,22 +218,22 @@ class RestaurantInspectionController extends Controller
         $limit = $request_data['limit'];
 
         /**
-         * We check if the restaurant_address field has a valid field within it, if it does, this just means that IFTTT
-         * is running an endpoint test. If it is set, simply apply this valid address to the restaurant address variable.
-         *
-         * IF the restaurant_field does not contain a valid field within it, this means that this is not an endpoint test
-         * but an actual endpoint hit, so we just add the restaurant address field to the restaurant address variable.
+         * We check if the restaurant_location field has anything in it, if it does, then we create our latitude and
+         * longitude variables that we'll use later. We pass the lat and lon variable through number_format in order
+         * to reduce the length of the decimals to 4. i.e. this will take lat 38.2355554 and make it 38.2355. This
+         * is needed because the yelp data in our database only has 4 decimals for the gps coordinates.
          */
-        if(isset($request_data['triggerFields']['restaurant_address']['valid'])){
-            $restaurantAddress = $request_data['triggerFields']['restaurant_address']['valid'];
-        } else {
-            $restaurantAddress = $request_data['triggerFields']['restaurant_address'];
+        if(isset($request_data['triggerFields']['restaurant_location'])){
+            $lat = number_format($request_data['triggerFields']['restaurant_location']['lat'], 4);
+            $lon = number_format($request_data['triggerFields']['restaurant_location']['lon'],4) ;
         }
 
         /**
-         * Get a list of records based on the restaurant address field that was passes to us earlier.
+         * Get a list of records based on the restaurant latitude and longitude field that was passes to us earlier.
          */
-        $records = $this->container->db->table('restaurant_inspections')->where('address','like',"%" . $restaurantAddress . "%")->get();
+        $db = $this->container->db->connection();
+        $records = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .01 ORDER BY distance"),
+            array('lon'=>$lon,'lat'=>$lat));
 
         /**
          * If records is not empty or 0
@@ -324,15 +325,19 @@ class RestaurantInspectionController extends Controller
      */
     function favorite_restaurant_inspections_restaurant_address_validation($request, $response, $args){
         /**
-         * Parse JSON data and get the incoming address from the value field.
+         * Parse JSON data and get latitude and longitude from the value field array.
          */
         $request_data = json_decode($request->getBody()->getContents(), true);
-        $incomingAddress = $request_data['value'];
+        $lat = number_format($request_data['value']['lat'], 4);
+        $lon = number_format($request_data['value']['lon'],4) ;
+
 
         /**
-         * Query DB with the incoming address that was specified by the user.
+         * Query DB with the given longitude and latitude and try to find a record with the closest coordinates.
          */
-        $restaurant = $this->container->db->table('restaurant_inspections')->where('address','like',"%" . $incomingAddress . "%")->first();
+        $db = $this->container->db->connection();
+        $restaurant = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .01 ORDER BY distance"),
+            array('lon'=>$lon,'lat'=>$lat));
 
         /**
          * If the restaurant variable isn't empty or 0.

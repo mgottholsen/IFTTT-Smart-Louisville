@@ -24,17 +24,29 @@ class TestsController extends Controller
                             'what_is_your_address' => '121 Freeman AVE'
                         ],
                         'favorite_restaurant_inspections' => [
-                            'restaurant_address' => [
-                                'valid' => '627 S 4TH ST',
-                                'invalid' => 'blah'
+                            'restaurant_location' => [
+                                "lat" => "38.198825",
+                                "lon" => "-85.783031",
+                                "address" => "",
+                                "description" => ""
                             ]
                         ]
                     ],
                     'triggerFieldValidations' => [
                         'favorite_restaurant_inspections' => [
-                            'restaurant_address' => [
-                                'valid' => '627 S 4TH ST',
-                                'invalid' => 'blah'
+                            'restaurant_location' => [
+                                "valid" => [
+                                    "lat" => 38.198825,
+                                    "lon" => -85.783031,
+                                    "address" => "",
+                                    "description" => ""
+                                ],
+                                "invalid" => [
+                                    "lat" => "hello",
+                                    "lon" => "no longitude here",
+                                    "address" => "",
+                                    "description" => ""
+                                ]
                             ]
                         ]
                     ]

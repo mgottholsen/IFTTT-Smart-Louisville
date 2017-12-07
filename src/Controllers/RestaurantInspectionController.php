@@ -225,14 +225,14 @@ class RestaurantInspectionController extends Controller
          */
         if(isset($request_data['triggerFields']['restaurant_location'])){
             $lat = number_format($request_data['triggerFields']['restaurant_location']['lat'], 4);
-            $lon = number_format($request_data['triggerFields']['restaurant_location']['lon'],4) ;
+            $lon = number_format($request_data['triggerFields']['restaurant_location']['lng'],4) ;
         }
 
         /**
          * Get a list of records based on the restaurant latitude and longitude field that was passes to us earlier.
          */
         $db = $this->container->db->connection();
-        $records = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .01 ORDER BY distance"),
+        $records = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .5 ORDER BY distance LIMIT 1"),
             array('lon'=>$lon,'lat'=>$lat));
 
         /**
@@ -329,14 +329,14 @@ class RestaurantInspectionController extends Controller
          */
         $request_data = json_decode($request->getBody()->getContents(), true);
         $lat = number_format($request_data['value']['lat'], 4);
-        $lon = number_format($request_data['value']['lon'],4) ;
+        $lon = number_format($request_data['value']['lng'],4) ;
 
 
         /**
          * Query DB with the given longitude and latitude and try to find a record with the closest coordinates.
          */
         $db = $this->container->db->connection();
-        $restaurant = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .01 ORDER BY distance"),
+        $restaurant = $db->select($db->raw("SELECT *, SQRT(POW(69.1 * (latitude - :lat), 2) + POW(69.1 * (:lon - longitude) * COS(latitude / 57.3), 2)) AS distance FROM ifttt_api.restaurant_inspections HAVING distance < .5 ORDER BY distance LIMIT 1"),
             array('lon'=>$lon,'lat'=>$lat));
 
         /**

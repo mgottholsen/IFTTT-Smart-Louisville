@@ -26,7 +26,7 @@ class TestsController extends Controller
                         'favorite_restaurant_inspections' => [
                             'restaurant_location' => [
                                 "lat" => "38.198825",
-                                "lon" => "-85.783031",
+                                "lng" => "-85.783031",
                                 "address" => "",
                                 "description" => ""
                             ]
@@ -37,13 +37,13 @@ class TestsController extends Controller
                             'restaurant_location' => [
                                 "valid" => [
                                     "lat" => 38.198825,
-                                    "lon" => -85.783031,
+                                    "lng" => -85.783031,
                                     "address" => "",
                                     "description" => ""
                                 ],
                                 "invalid" => [
                                     "lat" => "hello",
-                                    "lon" => "no longitude here",
+                                    "lng" => "no longitude here",
                                     "address" => "",
                                     "description" => ""
                                 ]

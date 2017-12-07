@@ -23,6 +23,8 @@ $app->group('/ifttt/v1', function () use ($app) {
     // Favorite Restaurant Inspection
     $app->post('/triggers/favorite_restaurant_inspections', 'RestaurantInspectionController:favorite_restaurant_inspections');
     $app->post('/triggers/favorite_restaurant_inspections/fields/restaurant_location/validate','RestaurantInspectionController:favorite_restaurant_inspections_restaurant_address_validation');
+    $app->post('/triggers/favorite_restaurant_inspections/fields/restaurant_location/options','RestaurantInspectionController:favorite_restaurant_inspections_restaurant_address_validation');
+
 });
 
 
